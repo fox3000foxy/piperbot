@@ -90,6 +90,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       await interaction.editReply("⏳ Downloading model...");
       const voice = await getVoice(m);
       await interaction.editReply("⏳ Running inference...");
+      const inferenceStart = Date.now();
       const result = await voice.synthesize(text, {
         outputFormat: "wav",
         lengthScale,
@@ -104,7 +105,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
         return;
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
-      const ms = Date.now() - enqueuedAt;
+      const ms = Date.now() - inferenceStart;
       await interaction.editReply({ content: `✅ Result (${ms}ms):`, files: [file] });
     } catch (e) {
       try {
