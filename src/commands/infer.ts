@@ -63,6 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     return;
   }
   await interaction.deferReply({ ephemeral });
+  const startedAt = Date.now();
 
   const modelName = interaction.options.getString("model", true);
   const m = findModel(modelName);
@@ -104,7 +105,8 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
         return;
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
-      await interaction.editReply({ content: "✅ Result:", files: [file] });
+      const secs = ((Date.now() - startedAt) / 1000).toFixed(1);
+      await interaction.editReply({ content: `✅ Result (${secs}s):`, files: [file] });
     } catch (e) {
       try {
         await interaction.editReply(`❌ Error: ${e instanceof Error ? e.message.slice(0, 1500) : String(e).slice(0, 1500)}`);
