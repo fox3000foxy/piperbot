@@ -4,11 +4,11 @@ Discord TTS bot backed by the [PiperHub](https://piperhub.org) voice catalog (~5
 
 ## Commands
 
-- `/infer run` — Synthesize speech: `model` (autocomplete), `text` (empty = demo text in the model's language), `length_scale`, `noise_scale`, `noise_w`, `speaker` (autocomplete for multi-voice models), `sentence_silence`, `volume`. A 📊 Stats button on the result reveals download/inference timings (ephemeral).
-- `/infer help` — Parameter reference.
-- `/models` — List and filter voices by language, name, quality.
-- `/dataset list|sources` — Browse companion LJSpeech datasets.
-- `/help` — Command overview.
+- `/infer run` - Synthesize speech: `model` (autocomplete), `text` (empty = demo text in the model's language), `length_scale`, `noise_scale`, `noise_w`, `speaker` (autocomplete for multi-voice models), `sentence_silence`, `volume`. A 📊 Stats button on the result reveals download/inference timings (ephemeral).
+- `/infer help` - Parameter reference.
+- `/models` - List and filter voices by language, name, quality.
+- `/dataset list|sources` - Browse companion LJSpeech datasets.
+- `/help` - Command overview.
 
 Inference requests run through a FIFO queue (one synthesis at a time).
 

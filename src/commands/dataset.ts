@@ -24,7 +24,7 @@ function buildPages(rows: Record<string, string>[]): string[] {
   for (let i = 0; i < rows.length; i += PER_PAGE) {
     pages.push(rows.slice(i, i + PER_PAGE).map((d) => {
       const mention = d.thread_id ? ` <#${d.thread_id}>` : "";
-      return `${d.thread_name ?? "?"} (\`${d.language ?? "?"}\` — ${d.source ?? "?"})${mention}`;
+      return `${d.thread_name ?? "?"} (\`${d.language ?? "?"}\` - ${d.source ?? "?"})${mention}`;
     }).join("\n"));
   }
   return pages;

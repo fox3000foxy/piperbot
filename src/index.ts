@@ -7,11 +7,11 @@ import * as models from "./commands/models.js";
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const HELP_TEXT = `**PiperBot commands:**
-• \`/infer run\` — Synthesize speech with a Piper model
-• \`/infer help\` — Parameter explanations for /infer run
-• \`/models\` — List and filter TTS models
-• \`/dataset list\` — List and filter LJSpeech datasets
-• \`/dataset sources\` — List dataset sources`;
+• \`/infer run\` - Synthesize speech with a Piper model
+• \`/infer help\` - Parameter explanations for /infer run
+• \`/models\` - List and filter TTS models
+• \`/dataset list\` - List and filter LJSpeech datasets
+• \`/dataset sources\` - List dataset sources`;
 
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag} (${c.user.id})`);

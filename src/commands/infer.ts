@@ -20,14 +20,14 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((s) => s.setName("help").setDescription("Show parameter explanations for /infer run"));
 
 export const HELP_TEXT = `**Parametres de \`/infer run\` :**
-• **model** (obligatoire) — Nom du modele TTS (autocompletion disponible)
-• **text** (optionnel) — Texte a synthetiser. Laissez vide pour un texte de demo dans la langue du modele
-• **length_scale** (float) — Echelle de longueur des phonemes. > 1 = plus lent, < 1 = plus rapide. Defaut: config du modele
-• **noise_scale** (float) — Bruit du generateur (0.0-1.0+). Plus haut = plus de variation. Defaut: config du modele
-• **noise_w** (float) — Bruit de largeur des phonemes (0.0-1.0+). Affecte la variabilite. Defaut: config du modele
-• **speaker** (int) — ID du speaker (0 par defaut). Utile pour les modeles multi-voix
-• **sentence_silence** (float) — Secondes de silence ajoutees apres chaque phrase
-• **volume** (float) — Multiplicateur de volume (1.0 = normal, 2.0 = 2x plus fort)
+• **model** (obligatoire) - Nom du modele TTS (autocompletion disponible)
+• **text** (optionnel) - Texte a synthetiser. Laissez vide pour un texte de demo dans la langue du modele
+• **length_scale** (float) - Echelle de longueur des phonemes. > 1 = plus lent, < 1 = plus rapide. Defaut: config du modele
+• **noise_scale** (float) - Bruit du generateur (0.0-1.0+). Plus haut = plus de variation. Defaut: config du modele
+• **noise_w** (float) - Bruit de largeur des phonemes (0.0-1.0+). Affecte la variabilite. Defaut: config du modele
+• **speaker** (int) - ID du speaker (0 par defaut). Utile pour les modeles multi-voix
+• **sentence_silence** (float) - Secondes de silence ajoutees apres chaque phrase
+• **volume** (float) - Multiplicateur de volume (1.0 = normal, 2.0 = 2x plus fort)
 **Exemple :**
 \`/infer run model:Jett text:hello length_scale:1.2 noise_scale:0.5\``;
 
