@@ -88,7 +88,9 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     }
     try {
       await interaction.editReply("⏳ Downloading model...");
+      const downloadStart = Date.now();
       const voice = await getVoice(m);
+      const downloadMs = Date.now() - downloadStart;
       await interaction.editReply("⏳ Running inference...");
       const inferenceStart = Date.now();
       const result = await voice.synthesize(text, {
@@ -106,7 +108,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
       const ms = Date.now() - inferenceStart;
-      await interaction.editReply({ content: `✅ Result (${ms}ms):`, files: [file] });
+      await interaction.editReply({ content: `✅ Inference ready ! \nDownload: ${downloadMs < 1000 ? `*Cached*` : `${downloadMs}ms`}, Inference: ${ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`}\nResult:`, files: [file] });
     } catch (e) {
       try {
         await interaction.editReply(`❌ Error: ${e instanceof Error ? e.message.slice(0, 1500) : String(e).slice(0, 1500)}`);
