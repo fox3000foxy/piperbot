@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
 import { demoTextFor, isPublic } from "../common.js";
 import { findModel, getSpeakers, getVoice, modelNames } from "../voices.js";
 
@@ -108,7 +108,19 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
       const ms = Date.now() - inferenceStart;
-      await interaction.editReply({ content: `✅ Inference ready ! \nDownload: ${downloadMs < 1000 ? `*Cached*` : `${downloadMs}ms`}, Inference: ${ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`}\nResult:`, files: [file] });
+      const fmt = (v: number) => (v < 1000 ? `${v}ms` : `${(v / 1000).toFixed(1)}s`);
+      const stats = `Download: ${downloadMs < 1000 ? "*Cached*" : fmt(downloadMs)} | Inference: ${fmt(ms)} | Audio: ${(result.audio.length / 1024).toFixed(0)}KB`;
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId("stats").setLabel("Stats").setEmoji("📊").setStyle(ButtonStyle.Secondary),
+      );
+      const reply = await interaction.editReply({ content: "✅ Result:", files: [file], components: [row] });
+      const collector = reply.createMessageComponentCollector({ componentType: ComponentType.Button, time: 300_000 });
+      collector.on("collect", async (btn) => {
+        if (btn.customId === "stats") await btn.reply({ content: stats, ephemeral: true });
+      });
+      collector.on("end", async () => {
+        try { await interaction.editReply({ components: [] }); } catch { /* expired */ }
+      });
     } catch (e) {
       try {
         await interaction.editReply(`❌ Error: ${e instanceof Error ? e.message.slice(0, 1500) : String(e).slice(0, 1500)}`);
