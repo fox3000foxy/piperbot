@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { tmpdir, homedir } from "node:os";
 import { join } from "node:path";
 import { PiperNativeTTS, resolveModelFiles } from "pipertts";
 import { loadCsv, MODELS_CSV } from "./common.js";
@@ -97,25 +97,49 @@ export async function getVoice(m: ModelRow): Promise<PiperNativeTTS> {
   return voice;
 }
 
-/** Speaker list read from the cached config (downloads the model if needed). */
+/** Speaker list from the model's config JSON on HF (tiny file, no model download). 1h cache. */
+const speakerCache = new Map<string, { expires: number; speakers: { name: string; id: number }[] }>();
+const SPEAKER_TTL_MS = 3600_000;
+
+function hfToken(): string {
+  if (process.env.HF_TOKEN) return process.env.HF_TOKEN;
+  try {
+    const env = readFileSync(join(homedir(), "huggingface-crawler/.env"), "utf8");
+    for (const line of env.split("\n")) {
+      if (line.startsWith("HF_TOKEN=") && !line.trimStart().startsWith("#")) {
+        return line.slice("HF_TOKEN=".length).trim();
+      }
+    }
+  } catch { /* no .env */ }
+  return "";
+}
+
 export async function getSpeakers(m: ModelRow): Promise<{ name: string; id: number }[]> {
-  await getVoice(m); // ensures download
-  const dir = join(RAM_DIR, m.repo.replace("/", "--"));
-  const resolved = await resolveModelFiles({
-    modelUrl: hfUrl(m.repo, m.onnx),
-    configUrl: m.json ? hfUrl(m.repo, m.json) : undefined,
-    modelsDir: dir,
-  });
-  const cfg = JSON.parse(readFileSync(resolved.configPath, "utf8"));
-  const map = cfg.speaker_id_map ?? {};
-  const out: { name: string; id: number }[] = [];
-  for (const [name, sid] of Object.entries(map)) {
-    out.push({ name, id: Array.isArray(sid) ? (sid[0] ?? 0) : Number(sid) });
+  const hit = speakerCache.get(m.repo);
+  if (hit && Date.now() < hit.expires) return hit.speakers;
+  const headers: Record<string, string> = { "User-Agent": "PiperBot/1.0" };
+  const token = hfToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const res = await fetch(hfUrl(m.repo, m.json), { headers, signal: ctrl.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const cfg = await res.json();
+    const map = cfg.speaker_id_map ?? {};
+    const speakers: { name: string; id: number }[] = [];
+    for (const [name, sid] of Object.entries(map)) {
+      speakers.push({ name, id: Array.isArray(sid) ? (sid[0] ?? 0) : Number(sid as number) });
+    }
+    if (speakers.length === 0 && Number(cfg.num_speakers ?? 0) > 1) {
+      for (let i = 0; i < Number(cfg.num_speakers); i++) speakers.push({ name: `Speaker ${i}`, id: i });
+    }
+    speakers.sort((a, b) => a.id - b.id);
+    speakerCache.set(m.repo, { expires: Date.now() + SPEAKER_TTL_MS, speakers });
+    return speakers;
+  } finally {
+    clearTimeout(timer);
   }
-  if (out.length === 0 && Number(cfg.num_speakers ?? 0) > 1) {
-    for (let i = 0; i < Number(cfg.num_speakers); i++) out.push({ name: `Speaker ${i}`, id: i });
-  }
-  return out.sort((a, b) => a.id - b.id);
 }
 
 // Evict expired entries every 30 s, deleting RAM files.

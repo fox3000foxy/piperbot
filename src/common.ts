@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -22,6 +22,21 @@ export function loadToken(): string {
 }
 
 export function loadCsv(path: string): Record<string, string>[] {
+  const cached = csvCache.get(path);
+  try {
+    const mtime = statSync(path).mtimeMs;
+    if (cached && cached.mtime === mtime) return cached.rows;
+  } catch { /* unreadable */ }
+  const rows = parseCsv(path);
+  try {
+    csvCache.set(path, { mtime: statSync(path).mtimeMs, rows });
+  } catch { /* ignore */ }
+  return rows;
+}
+
+const csvCache = new Map<string, { mtime: number; rows: Record<string, string>[] }>();
+
+function parseCsv(path: string): Record<string, string>[] {
   const text = readFileSync(path, "utf8").replace(/^\uFEFF/, "");
   const [headerLine, ...lines] = text.split(/\r?\n/).filter((l) => l.trim() !== "");
   const headers = parseLine(headerLine);
