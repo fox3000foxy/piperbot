@@ -105,8 +105,8 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
         return;
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
-      const secs = ((Date.now() - startedAt) / 1000).toFixed(1);
-      await interaction.editReply({ content: `✅ Result (${secs}s):`, files: [file] });
+      const ms = Date.now() - startedAt;
+      await interaction.editReply({ content: `✅ Result (${ms}ms):`, files: [file] });
     } catch (e) {
       try {
         await interaction.editReply(`❌ Error: ${e instanceof Error ? e.message.slice(0, 1500) : String(e).slice(0, 1500)}`);
