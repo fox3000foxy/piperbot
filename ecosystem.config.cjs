@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: "piperbot-ts",
     script: "dist/index.js",
-    cwd: "/home/lsannier/huggingface-crawler/discord-bot-ts",
+    cwd: "~/huggingface-crawler/discord-bot-ts",
     interpreter: "node",
     env: {
       NODE_ENV: "production",
