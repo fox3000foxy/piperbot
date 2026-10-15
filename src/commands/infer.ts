@@ -63,7 +63,6 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
     return;
   }
   await interaction.deferReply({ ephemeral });
-  const startedAt = Date.now();
 
   const modelName = interaction.options.getString("model", true);
   const m = findModel(modelName);
@@ -105,7 +104,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
         return;
       }
       const file = new AttachmentBuilder(result.audio, { name: `${m.name.replace(/\s+/g, "_")}.wav` });
-      const ms = Date.now() - startedAt;
+      const ms = Date.now() - enqueuedAt;
       await interaction.editReply({ content: `✅ Result (${ms}ms):`, files: [file] });
     } catch (e) {
       try {
